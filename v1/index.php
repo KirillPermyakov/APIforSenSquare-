@@ -1,12 +1,15 @@
 <?php
 
+
+require_once '../vendor/autoload.php';
 require_once '../include/DbHandler.php';
 require_once '../include/PassHash.php';
-require '.././libs/Slim/Slim.php';
 
-\Slim\Slim::registerAutoloader();
+use Slim\Slim;
 
-$app = new \Slim\Slim();
+Slim::registerAutoloader();
+
+$app = new Slim();
 
 // User id from db - Global Variable
 $user_id = NULL;
@@ -18,11 +21,10 @@ function verifyRequiredParams($required_fields)
 {
     $error = false;
     $error_fields = "";
-    $request_params = array();
     $request_params = $_REQUEST;
     // Handling PUT request params
     if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
-        $app = \Slim\Slim::getInstance();
+        $app = Slim::getInstance();
         parse_str($app->request()->getBody(), $request_params);
     }
     foreach ($required_fields as $field) {
@@ -36,7 +38,7 @@ function verifyRequiredParams($required_fields)
         // Required field(s) are missing or empty
         // echo error json and stop the app
         $response = array();
-        $app = \Slim\Slim::getInstance();
+        $app = Slim::getInstance();
         $response["error"] = true;
         $response["message"] = 'Required field(s) ' . substr($error_fields, 0, -2) . ' is missing or empty';
         echoRespnse(400, $response);
@@ -49,7 +51,7 @@ function verifyRequiredParams($required_fields)
  */
 function validateEmail($email)
 {
-    $app = \Slim\Slim::getInstance();
+    $app = Slim::getInstance();
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $response["error"] = true;
         $response["message"] = 'Email address is not valid';
@@ -61,11 +63,11 @@ function validateEmail($email)
 /**
  * Echoing json response to client
  * @param String $status_code Http response code
- * @param Int $response Json response
+ * @param array $response Json response
  */
 function echoRespnse($status_code, $response)
 {
-    $app = \Slim\Slim::getInstance();
+    $app = Slim::getInstance();
     // Http response code
     $app->status($status_code);
 
@@ -143,12 +145,12 @@ $app->post('/login', function () use ($app) {
     echoRespnse(200, $response);
 });
 
-function authenticate(\Slim\Route $route)
+function authenticate()
 {
     // Getting request headers
     $headers = apache_request_headers();
     $response = array();
-    $app = \Slim\Slim::getInstance();
+    $app = Slim::getInstance();
 
     // Verifying Authorization Header
     if (isset($headers['authorization'])) {
@@ -278,17 +280,15 @@ $app->get('/users/:id', 'authenticate', function ($id) {
         $response["name"] = $result["name"];
         $response["email"] = $result["email"];
 
-        echoRespnse(200,$response);
-    }
-    else {
+        echoRespnse(200, $response);
+    } else {
         $response["error"] = true;
         $response["message"] = "The requested user doesn't exists";
         echoRespnse(404, $response);
     }
 });
-$app->put('/users/:id', 'authenticate', function($id) use ($app )
-{
-   verifyRequiredParams(array('name', 'email'));
+$app->put('/users/:id', 'authenticate', function ($id) use ($app) {
+    verifyRequiredParams(array('name', 'email'));
     $name = $app->request->put('name');
     $email = $app->request->put('email');
     $db = new DbHandler();
@@ -303,7 +303,7 @@ $app->put('/users/:id', 'authenticate', function($id) use ($app )
         $response["message"] = "User failed to update. Please try again!";
     }
     echoRespnse(200, $response);
-    
+
 });
 $app->put('/tasks/:id', 'authenticate', function ($task_id) use ($app) {
     // check for required params
