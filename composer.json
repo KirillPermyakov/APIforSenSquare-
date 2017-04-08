@@ -1,5 +1,24 @@
 {
+  "name": "kyrylo-permiakov/simple-api",
+  "description" : "simple rest api with Slim framework",
+  "keywords" : [
+    "rest",
+    "api",
+    "slim"
+  ],
+  "type": "project",
+  "authors" : [
+    {
+      "name" : "Kyrylo",
+      "email" : "permyakov.kirill@gmail.com"
+    }
+  ],
   "require": {
     "slim/slim": "2.6.2"
+  },
+  "autoload": {
+    "psr-4" : {
+      "app\\SimpleApi\\" : ""
+    }
   }
 }
