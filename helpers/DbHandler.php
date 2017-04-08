@@ -136,11 +136,12 @@ class DbHandler
         $stmt = $this->conn->prepare('SELECT id FROM users WHERE api_key=:api_key');
         $stmt->bindParam(':api_key', $apiKey);
         $stmt->execute();
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$stmt->fetch()) {
-            return false;
+        if ($result) {
+            return $result['id'];
         }
-        return true;
+        return false;
     }
 
     /**

@@ -88,4 +88,104 @@ $app->post('/login', function (Request $request, Response $response) {
     return $newResponse;
 });
 
+$app->get('/tasks', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key'])) {
+        $data['error'] = true;
+        $data['message'] = 'Api key is missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        $data = $db->getAllUserTasks($userId);
+        $data['error'] = false;
+        $newResponse = $response->withJson($data, 200);
+        return $newResponse;
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+}
+);
+
+$app->get('/users', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key'])) {
+        $data['error'] = true;
+        $data['message'] = 'Api key is missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        $data = $db->getAllUsers();
+        $data['error'] = false;
+        $newResponse = $response->withJson($data, 200);
+        return $newResponse;
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+});
+
+$app->post('/task', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $postParams = $request->getParsedBody();
+
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key']) || !ValidateHelper::validateParams($postParams, ['task'])) {
+        $data['error'] = true;
+        $data['message'] = 'Required param(s) missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        $taskId = $db->createTask($userId, $postParams['task']);
+        if ($taskId) {
+            $data['error'] = false;
+            $data['message'] = 'Task created successfully';
+            $data['task_id'] = $taskId;
+            $newResponse = $response->withJson($data, 200);
+            return $newResponse;
+        } else {
+            $data['error'] = true;
+            $data['message'] = 'Failed to create task. Please try again';
+            $newResponse = $response->withJson($data, 400);
+            return $newResponse;
+        }
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+});
+
 $app->run();
