@@ -4,33 +4,43 @@ namespace app\SimpleApi\helpers;
 
 class PassHash
 {
-
-    // blowfish
+    /**
+     * @var string
+     */
     private static $algo = '$2a';
-    // cost parameter
+    /**
+     * @var string
+     */
     private static $cost = '$10';
 
-    // mainly for internal use
+    /**
+     * @return string
+     */
     public static function uniqueSalt()
     {
         return substr(sha1(mt_rand()), 0, 22);
     }
 
-    // this will be used to generate a hash
+    /**
+     * @param $password
+     * @return string
+     */
     public static function hash($password)
     {
 
-        return crypt($password, self::$algo .
-            self::$cost .
-            '$' . self::uniqueSalt());
+        return crypt($password, self::$algo . self::$cost . '$' . self::uniqueSalt());
     }
 
-    // this will be used to compare a password against a hash
+    /**
+     * @param $hash
+     * @param $password
+     * @return bool
+     */
     public static function checkPassword($hash, $password)
     {
-        $full_salt = substr($hash, 0, 29);
-        $new_hash = crypt($password, $full_salt);
-        return ($hash == $new_hash);
+        $fullSalt = substr($hash, 0, 29);
+        $newHash = crypt($password, $fullSalt);
+        return ($hash == $newHash);
     }
 
 }
