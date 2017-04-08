@@ -1,2 +1,2 @@
-# APIforSenSquare-
-simple rest api for android application based on Slim framework 
+slim-api
+simple rest api for simple android application based on Slim framework 
