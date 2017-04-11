@@ -1,3 +1,4 @@
 vendor/*
 .idea
 phinx.yml
+config.php
