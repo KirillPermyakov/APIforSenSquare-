@@ -2,8 +2,8 @@
 
 namespace app\SimpleApi\v1;
 
-use app\SimpleApi\helpers\DbHandler;
-use app\SimpleApi\helpers\ValidateHelper;
+use SimpleApi\helpers\DbHandler;
+use SimpleApi\helpers\ValidateHelper;
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\SimpleApi\helpers;
+namespace SimpleApi\helpers;
 
 class ValidateHelper
 {
