@@ -1,14 +1,12 @@
 <?php
 
-namespace app\SimpleApi\helpers;
+namespace SimpleApi\helpers;
 
 use Exception;
 use PDOException;
 
 class PDOConnection
 {
-
-    private $conn;
     /**
      * @var PDOConnection
      */
