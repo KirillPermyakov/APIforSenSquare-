@@ -147,6 +147,64 @@ $app->get('/users', function (Request $request, Response $response) {
     }
 });
 
+$app->get('/task/{id}', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key'])) {
+        $data['error'] = true;
+        $data['message'] = 'Api key is missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        $data = $db->getTaskByIds($request->getAttribute('id'), $userId);
+        $data['error'] = false;
+        $newResponse = $response->withJson($data, 200);
+        return $newResponse;
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+});
+
+$app->get('/user/{id}', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key'])) {
+        $data['error'] = true;
+        $data['message'] = 'Api key is missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        $data = $db->getUserById($request->getAttribute('id'));
+        $data['error'] = false;
+        $newResponse = $response->withJson($data, 200);
+        return $newResponse;
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+});
+
 $app->post('/task', function (Request $request, Response $response) {
     $getParams = $request->getQueryParams();
     $postParams = $request->getParsedBody();
@@ -186,6 +244,126 @@ $app->post('/task', function (Request $request, Response $response) {
         return $newResponse;
     }
 
+});
+
+$app->put('/user/{id}', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $putParams = $request->getParsedBody();
+
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key']) || !ValidateHelper::validateParams($putParams, ['name', 'email'])) {
+        $data['error'] = true;
+        $data['message'] = 'Required param(s) missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $isValidEmail = ValidateHelper::isValidEmail($putParams['email']);
+
+    if (is_array($isValidEmail)) {
+        $newResponse = $response->withJson($isValidEmail, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        if ($db->updateUser($putParams['name'], $putParams['email'], $request->getAttribute('id'))) {
+            $data['error'] = false;
+            $data['message'] = 'User was updated successfully!';
+            $newResponse = $response->withJson($data, 200);
+            return $newResponse;
+        } else {
+            $data['error'] = true;
+            $data['message'] = 'Failed to update user. Please try again';
+            $newResponse = $response->withJson($data, 400);
+            return $newResponse;
+        }
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+});
+
+$app->put('/task/{id}', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $putParams = $request->getParsedBody();
+
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key']) || !ValidateHelper::validateParams($putParams, ['task', 'status'])) {
+        $data['error'] = true;
+        $data['message'] = 'Required param(s) missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+
+    if ($userId) {
+        if ($db->updateTask($putParams['task'], $putParams['status'], $request->getAttribute('id'), $userId)) {
+            $data['error'] = false;
+            $data['message'] = 'Task was updated successfully!';
+            $newResponse = $response->withJson($data, 200);
+            return $newResponse;
+        } else {
+            $data['error'] = true;
+            $data['message'] = 'Failed to update task. Please try again';
+            $newResponse = $response->withJson($data, 400);
+            return $newResponse;
+        }
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+});
+
+$app->delete('/task/{id}', function (Request $request, Response $response) {
+    $getParams = $request->getQueryParams();
+    $data = [
+        'error' => null
+    ];
+
+    if (!ValidateHelper::validateParams($getParams, ['api_key'])) {
+        $data['error'] = true;
+        $data['message'] = 'Api key is missing';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
+
+    $db = new DbHandler();
+    $userId = $db->isApiKeyExists($getParams['api_key']);
+    if ($userId) {
+        if ($db->deleteTask($userId, $request->getAttribute('id'))) {
+            $data['error'] = false;
+            $data['message'] = 'Task was successfully deleted';
+            $newResponse = $response->withJson($data, 200);
+            return $newResponse;
+        } else {
+            $data['error'] = true;
+            $data['message'] = 'Failed to delete task. Please try again';
+            $newResponse = $response->withJson($data, 400);
+            return $newResponse;
+        }
+    } else {
+        $data['error'] = true;
+        $data['message'] = 'Wrong Api Key. Authorization failed.';
+        $newResponse = $response->withJson($data, 400);
+        return $newResponse;
+    }
 });
 
 $app->run();

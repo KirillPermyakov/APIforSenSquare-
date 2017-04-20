@@ -129,7 +129,7 @@ class DbHandler
     /**
      * Check if api key exists in DB
      * @param $apiKey string
-     * @return bool
+     * @return int | bool
      */
     public function isApiKeyExists($apiKey)
     {
@@ -284,8 +284,8 @@ class DbHandler
     public function deleteTask($userId, $taskId)
     {
         $stmt = $this->conn->prepare("DELETE t FROM tasks t, user_tasks ut WHERE t.id = :task_id AND ut.task_id = t.id AND ut.user_id = :user_id");
-        $stmt->bindParam('user_id', $userId);
         $stmt->bindParam('task_id', $taskId);
+        $stmt->bindParam('user_id', $userId);
         $stmt->execute();
 
         return $stmt->rowCount() > 0;
